@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DEV=/dev/ttyUSB0
-ADDR=01
+ADDR=02
 
 # Get a 4 ASCII digit number and divide by $1, precision $2 ( or 2dp. ) $3 == 1 for signed.
 get_div()
