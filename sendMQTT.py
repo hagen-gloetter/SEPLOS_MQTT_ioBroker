@@ -1,18 +1,29 @@
 # python 3.6
 # extension for the cool https://github.com/byte4geek/SEPLOS_MQTT
-# to bring the data to ioBroker 
+# to bring the data to ioBroker
 # written by hagen@gloetter.de
 # 07.02.2023
 
+# MQTT HowTo
 # https://www.emqx.com/en/blog/how-to-use-mqtt-in-python
 
-
+# -------------------------
+# STUFF YOU NEED TO INSTALL
+# -------------------------
 # sudo apt-get update
-# sudo apt-get install python-rpi.gpio
 # pip install python-dotenv
 # pip install paho-mqtt
 
-from operator import truediv
+# -------------------------
+# Setup MQTT-Broker-Stuff
+# -------------------------
+# generate a file called .env in this Dir with this content:
+# secretUser = "yourMQTTusername"
+# secretPass = "totalsecret"
+# secretHost = "iobroker.fritz.box"
+# secretPort = "1883" or "1886"
+# https://www.realpythonproject.com/3-ways-to-store-and-read-credentials-locally-in-python/
+
 import time
 import sys
 import random
@@ -20,18 +31,9 @@ import os
 from paho.mqtt import client as mqtt_client
 from dotenv import load_dotenv
 
-# https://www.realpythonproject.com/3-ways-to-store-and-read-credentials-locally-in-python/
-# generate a file called .env
-# in this Dir with this content:
-# secretUser = "tasmota"
-# secretPass = "totalsecret"
-# secretHost = "iobroker.fritz.box"
-# secretPort = "1883" # 1886
-
 # Setup MQTT
 broker = 'iobroker.fritz.box'
 port = 1886
-topic = "Semplos"  # test
 load_dotenv()
 broker = os.environ.get('secretHost')
 port = int(os.environ.get('secretPort'))
@@ -40,9 +42,9 @@ password = os.environ.get('secretPass')
 print("brokerHost:Port = " + broker + " "+str(port))
 print("user = "+username)
 client = None
-BaseTopic = "Semplos"
+BaseTopic = "Seplos"
 NumberOfBatterypacks = 2
-TopicName = "BatteryPack"  # Datafilenme = TopicName + number + txt
+TopicName = "BatteryPack"  # Datafilename = TopicName + number + txt
 
 myKeys = ["cell01",
           "cell02",
@@ -122,8 +124,7 @@ def main():
         for line in Lines:
             topic = BaseTopic+"/" + TopicName + str(i) + "/" + myKeys[count]
             value = line.strip()
-#            print(myKeys[count] + ":" + line.strip())
-            print (f"publishing: {topic} : {value}")
+            print(f"publishing: {topic} : {value}")
             publish(client, topic, value)
             count += 1
     client.loop_stop()
