@@ -71,9 +71,9 @@ myKeys = ["cell01",
           "charge_discharge",
           "total_voltage",
           "residual_capacity",
-          "unknown1",
+          "amp_hours1",
           "soc",
-          "unknown2",
+          "amp_hours2",
           "cycles",
           "soh",
           "port_voltage"
@@ -121,12 +121,21 @@ def main():
         file = open(fn, 'r')
         Lines = file.readlines()
         count = 0
+        charge_discharge = 0
+        total_voltage = 0
+        mqttpath = BaseTopic + "/" + TopicName + str(i) + "/"
         for line in Lines:
-            topic = BaseTopic+"/" + TopicName + str(i) + "/" + myKeys[count]
+            topic = mqttpath + myKeys[count]
             value = line.strip()
-            print(f"publishing: {topic} : {value}")
+            #print(f"publishing: {topic} : {value}")
+            if myKeys[count] == "charge_discharge":  # needed to calc power
+                charge_discharge = value
+            if myKeys[count] == "total_voltage":  # needed to calc power
+                total_voltage = value
             publish(client, topic, value)
             count += 1
+        power = total_voltage * charge_discharge # P = V * A
+        publish(client, mqttpath + "power", power)
     client.loop_stop()
 
 
