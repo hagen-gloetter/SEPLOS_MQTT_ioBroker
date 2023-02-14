@@ -134,7 +134,8 @@ def main():
                 total_voltage = value
             publish(client, topic, value)
             count += 1
-        power = total_voltage * charge_discharge # P = V * A
+        power = float(total_voltage) * float(charge_discharge) # P = V * A
+        power = round(power,2)
         publish(client, mqttpath + "power", power)
     client.loop_stop()
 
