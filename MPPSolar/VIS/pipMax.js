@@ -28,30 +28,25 @@ var sUdActPv1kWh        = sUdBase + 'act.Pv1kWh';
 var sUdActPv2kWh        = sUdBase + 'act.Pv2kWh';
 var sUdActAcChargekWh   = sUdBase + 'act.AcChargekWh';
 
-var sUdDayOutputkWh     = sUdBase + 'day.OutputkWh';
-var sUdDayImportedkWh   = sUdBase + 'day.ImportedkWh';
-var sUdDaySolarkWh      = sUdBase + 'day.SolarkWh';
-var sUdDayPvTkWh        = sUdBase + 'day.PvTkWh';
-var sUdDayPv1kWh        = sUdBase + 'day.Pv1kWh';
-var sUdDayPv2kWh        = sUdBase + 'day.Pv2kWh';
-var sUdDayAcChargekWh   = sUdBase + 'day.AcChargekWh';
-
-
-//var sUdDayInverterkWh = sUdBase + 'day.inverterkWh';  // vom vortag
-
 var sUdActInvMinLineMode = sUdBase + 'act.MinutenLineMode';
 var sUdActInvMinBattMode = sUdBase + 'act.MinutenBattMode';
-
-//var sUdActInverterkWh = sUdBase + 'act.Solar_kWh';
-//var sUdDayInverterkWh = sUdBase + 'day.Solar_kWh';  // vom vortag
 
 // :60 watt stunden und 1000 kwh.
 let wmin2kwh = 1000 * 60;
     
-
 schedule('* * * * *', InverterMinuteScript); // jede Minute
 schedule({hour: 23, minute: 59}, RunDailyScript );
- 
+
+function createActAndDay(actName, clrValue)
+{
+    let dayName = actName.replace(".act.",".day.");
+    let sumName = actName.replace(".act.",".sum.");
+
+    createState(actName, clrValue);
+    createState(dayName, clrValue);
+    createState(sumName, clrValue);
+}
+
 function createVars()
 {
     // UD Variablen
@@ -63,25 +58,18 @@ function createVars()
     createState(sUdPv2WattMinuten, 0);
     createState(sUdAcChargeWattMinuten, 0);
 
-    createState(sUdActOutputkWh, 0);
-    createState(sUdActImportedkWh, 0);
-    createState(sUdActSolarkWh, 0);
-    createState(sUdActPvTkWh, 0);
-    createState(sUdActPv1kWh, 0);
-    createState(sUdActPv2kWh, 0);
-    createState(sUdActAcChargekWh, 0);
+    createState(sUdActInvLineMode, true);
+    createState(sUdActInvMinLineMode, 0);
+    createState(sUdActInvMinBattMode, 0);
 
-   createState(sUdActInvLineMode, true);
-   createState(sUdActInvMinLineMode, 0);
-   createState(sUdActInvMinBattMode, 0);
-
-   createState(sUdDayOutputkWh, 0);
-   createState(sUdDayImportedkWh, 0);
-   createState(sUdDaySolarkWh, 0);
-   createState(sUdDayPvTkWh, 0);
-   createState(sUdDayPv1kWh, 0);
-   createState(sUdDayPv2kWh, 0);
-   createState(sUdDayAcChargekWh, 0);
+    // sums
+    createActAndDay(sUdActOutputkWh, 0);
+    createActAndDay(sUdActImportedkWh, 0);
+    createActAndDay(sUdActSolarkWh, 0);
+    createActAndDay(sUdActPvTkWh, 0);
+    createActAndDay(sUdActPv1kWh, 0);
+    createActAndDay(sUdActPv2kWh, 0);
+    createActAndDay(sUdActAcChargekWh, 0);
    
    log("createVars called ");
 }
@@ -179,24 +167,36 @@ function InverterMinuteScript()
     //log("minute: " + actWatt + " -> " + actMode);
 }
 
-function move2dayAndClear(actName, dayName, minVal)
+function move2dayAndClear(actName, valMinuten)
 {
-    let last = getState(actName).val;
-    setState(dayName, last);
+    let dayName = actName.replace(".act.",".day.");
+    let sumName = actName.replace(".act.",".sum.");
+    let myval = getState(actName).val;
+
+    let mySum = getState(sumName).val;
+    mySum += myval;
+
+    setState(dayName, myval);
+    setState(sumName, mySum);
     // clear
     setState(actName, 0);
-    setState(minVal, 0);
+    setState(valMinuten, 0);
 }
 
 function RunDailyScript() 
 {
-    move2dayAndClear(sUdActOutputkWh       ,sUdDayOutputkWh    ,sUdOutputWattMinuten);
-    move2dayAndClear(sUdImportedWattMinuten,sUdDayImportedkWh  ,sUdImportedWattMinuten);
-    move2dayAndClear(sUdSolarWattMinuten   ,sUdDaySolarkWh     ,sUdSolarWattMinuten);
-    move2dayAndClear(sUdPvTWattMinuten     ,sUdDayPvTkWh       ,sUdPvTWattMinuten);
-    move2dayAndClear(sUdPv1WattMinuten     ,sUdDayPv1kWh       ,sUdPv1WattMinuten);
-    move2dayAndClear(sUdPv2WattMinuten     ,sUdDayPv2kWh       ,sUdPv2WattMinuten);
-    move2dayAndClear(sUdAcChargeWattMinuten,sUdDayAcChargekWh  ,sUdAcChargeWattMinuten);
-    
+    move2dayAndClear(sUdActOutputkWh    ,sUdOutputWattMinuten);
+    move2dayAndClear(sUdActImportedkWh  ,sUdImportedWattMinuten);
+    move2dayAndClear(sUdActSolarkWh     ,sUdSolarWattMinuten);
+    move2dayAndClear(sUdActPvTkWh       ,sUdPvTWattMinuten);
+    move2dayAndClear(sUdActPv2kWh       ,sUdPv1WattMinuten);
+    move2dayAndClear(sUdPv2WattMinuten  ,sUdPv2WattMinuten);
+    move2dayAndClear(sUdActAcChargekWh  ,sUdAcChargeWattMinuten);
+
+
+
+
+
+
     log("Skript wird jeden Tag um 23:39 ausgeführt: " );
 }
