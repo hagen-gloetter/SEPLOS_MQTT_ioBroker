@@ -43,7 +43,7 @@ print("brokerHost:Port = " + broker + " "+str(port))
 print("user = "+username)
 client = None
 BaseTopic = "Seplos"
-NumberOfBatterypacks = 2
+NumberOfBatterypacks = 3
 TopicName = "BatteryPack"  # Datafilename = TopicName + number + txt
 
 myKeys = ["cell01",
